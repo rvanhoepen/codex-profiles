@@ -1,4 +1,4 @@
-# codex-profiles
+# codex-profiles (cxp)
 
 [![Smoke Tests](https://github.com/rvanhoepen/codex-profiles/actions/workflows/smoke.yml/badge.svg)](https://github.com/rvanhoepen/codex-profiles/actions/workflows/smoke.yml)
 
