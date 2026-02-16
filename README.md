@@ -4,27 +4,49 @@
 
 Switch between local Codex account states by snapshotting `~/.codex` into named profiles.
 
+## Installation
+
+```bash
+./install.sh
+```
+
+By default this installs to `~/.local/bin/codex-profiles`.
+
+If `~/.local/bin` is not on your `PATH`, add this to your shell profile (for example `~/.zshrc`):
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Uninstall:
+
+```bash
+./uninstall.sh
+```
+
 ## Quick Start
 
 ```bash
-./codex-profiles.sh add work
-./codex-profiles.sh add personal
-./codex-profiles.sh list
-./codex-profiles.sh switch work
-./codex-profiles.sh save work
-./codex-profiles.sh current
+codex-profiles add work
+codex-profiles add personal
+codex-profiles list
+codex-profiles switch work
+codex-profiles save work
+codex-profiles current
 ```
 
 ## Command Reference
 
 ```bash
-./codex-profiles.sh add <name>         # create profile from current ~/.codex
-./codex-profiles.sh save [name]        # save current ~/.codex into named/current profile
-./codex-profiles.sh list               # list all profiles
-./codex-profiles.sh switch <name>      # restore profile into ~/.codex
-./codex-profiles.sh current            # print active profile
-./codex-profiles.sh help
+codex-profiles add <name>         # create profile from current ~/.codex
+codex-profiles save [name]        # save current ~/.codex into named/current profile
+codex-profiles list               # list all profiles
+codex-profiles switch <name>      # restore profile into ~/.codex
+codex-profiles current            # print active profile
+codex-profiles help
 ```
+
+For local development without installing, replace `codex-profiles` with `./codex-profiles.sh`.
 
 Notes:
 
@@ -36,17 +58,17 @@ Notes:
 
 ```bash
 # Start in work account state
-./codex-profiles.sh add work
+codex-profiles add work
 
 # Change Codex account/session in the app, then capture it
-./codex-profiles.sh add personal
+codex-profiles add personal
 
 # Switch any time
-./codex-profiles.sh switch work
-./codex-profiles.sh switch personal
+codex-profiles switch work
+codex-profiles switch personal
 
 # Save updates back to active profile
-./codex-profiles.sh save
+codex-profiles save
 ```
 
 ## Smoke Tests
