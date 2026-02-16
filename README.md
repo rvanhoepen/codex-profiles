@@ -14,7 +14,7 @@ This project was primarily AI-assisted ("vibe coded") under human supervision. I
 ./install.sh
 ```
 
-By default this installs to `~/.local/bin/codex-profiles`.
+By default this installs to `~/.local/bin/codex-profiles` and a short alias at `~/.local/bin/cxp`.
 
 If `~/.local/bin` is not on your `PATH`, add this to your shell profile (for example `~/.zshrc`):
 
@@ -31,12 +31,12 @@ Uninstall:
 ## Quick Start
 
 ```bash
-codex-profiles add work
-codex-profiles add personal
-codex-profiles list
-codex-profiles switch work
-codex-profiles save work
-codex-profiles current
+cxp add work
+cxp add personal
+cxp list
+cxp switch work
+cxp save work
+cxp current
 ```
 
 ## Command Reference
@@ -52,6 +52,8 @@ codex-profiles help
 
 For local development without installing, replace `codex-profiles` with `./codex-profiles.sh`.
 
+`cxp` is an installed alias to the same command.
+
 Notes:
 
 - Profile data is stored in `~/.codex-profiles/profiles/<name>/codex`.
@@ -60,6 +62,7 @@ Notes:
 - Use `--no-autosave` to skip auto-save for one switch.
 - Set `CODEX_PROFILES_AUTOSAVE=0` to disable auto-save (default is enabled).
 - Use `--force` to skip overwrite confirmations.
+- `install.sh` warns and leaves `~/.local/bin/cxp` unchanged if it already exists and is not managed by this project.
 
 ## Example Workflow
 

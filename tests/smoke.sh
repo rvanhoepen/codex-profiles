@@ -4,6 +4,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_PATH="${ROOT_DIR}/codex-profiles.sh"
+INSTALL_PATH="${ROOT_DIR}/install.sh"
+UNINSTALL_PATH="${ROOT_DIR}/uninstall.sh"
 TMP_HOME=""
 
 fail() {
@@ -97,6 +99,25 @@ main() {
 	if [[ "$backup_count" -lt 1 ]]; then
 		fail "expected at least one backup after switch operations"
 	fi
+
+	local tmp_bin
+	tmp_bin="$(mktemp -d)"
+	printf '#!/usr/bin/env bash\nexit 0\n' >"$tmp_bin/cxp"
+	chmod +x "$tmp_bin/cxp"
+
+	local install_out
+	install_out="$(BIN_DIR="$tmp_bin" bash "$INSTALL_PATH" 2>&1)"
+	[[ "$install_out" == *"already exists"* ]] || fail "install should warn when cxp already exists"
+	[[ -x "$tmp_bin/codex-profiles" ]] || fail "install should still create codex-profiles binary"
+	[[ ! -L "$tmp_bin/cxp" ]] || fail "install should not overwrite existing cxp command"
+
+	local uninstall_out
+	uninstall_out="$(BIN_DIR="$tmp_bin" bash "$UNINSTALL_PATH" 2>&1)"
+	[[ "$uninstall_out" == *"Leaving it unchanged"* ]] || fail "uninstall should not delete unmanaged cxp command"
+	[[ ! -e "$tmp_bin/codex-profiles" ]] || fail "uninstall should remove codex-profiles binary"
+	[[ -e "$tmp_bin/cxp" ]] || fail "uninstall should keep unmanaged cxp command"
+
+	rm -rf "$tmp_bin"
 
 	printf 'PASS: smoke tests completed successfully\n'
 }

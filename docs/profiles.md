@@ -51,6 +51,7 @@ Without tooling, switching requires manual file copying in `~/.codex`, which is 
 - **SR-001**: The tool MUST back up current `~/.codex` before switching.
 - **SR-002**: The tool MUST avoid partial writes (stage then move atomically where possible).
 - **SR-003**: The tool MUST refuse destructive overwrite unless user explicitly requests it (or uses a forced flag).
+- **SR-004**: Installer alias setup MUST warn and avoid overwriting an existing `cxp` command that it does not manage.
 
 ### UX Requirements
 
