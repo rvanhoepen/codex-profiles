@@ -14,6 +14,7 @@ TMP_DIR="${BASE_DIR}/tmp"
 
 FORCE=0
 VERBOSE=0
+AUTOSAVE_ENABLED=1
 
 usage() {
 	cat <<EOF
@@ -21,13 +22,16 @@ Usage:
   ${SCRIPT_NAME} add <name>         Create profile from current ~/.codex
   ${SCRIPT_NAME} save [name]        Save current ~/.codex into named/current profile
   ${SCRIPT_NAME} list               List available profiles
-  ${SCRIPT_NAME} switch <name>      Restore profile into ~/.codex
+  ${SCRIPT_NAME} switch [--no-autosave] <name>
+                                Restore profile into ~/.codex
   ${SCRIPT_NAME} current            Print active profile (if known)
   ${SCRIPT_NAME} help               Show this help
 
 Options:
   --force      Allow overwrite without prompt
   --verbose    Print additional logs
+  --no-autosave (switch only)
+              Disable auto-save for one switch operation
   -h, --help   Show this help
 
 Examples:
@@ -36,7 +40,12 @@ Examples:
   ${SCRIPT_NAME} save personal
   ${SCRIPT_NAME} list
   ${SCRIPT_NAME} switch work
+  ${SCRIPT_NAME} switch --no-autosave personal
   ${SCRIPT_NAME} current
+
+Environment:
+  CODEX_PROFILES_AUTOSAVE=1|0
+              Enable/disable switch auto-save (default: 1)
 EOF
 }
 
@@ -96,6 +105,24 @@ read_current_profile() {
 write_current_profile() {
 	local name="$1"
 	printf '%s\n' "$name" >"$CURRENT_FILE"
+}
+
+configure_autosave_from_env() {
+	local raw="${CODEX_PROFILES_AUTOSAVE:-1}"
+	local normalized="${raw,,}"
+
+	case "$normalized" in
+	1 | true | yes | on)
+		AUTOSAVE_ENABLED=1
+		;;
+	0 | false | no | off)
+		AUTOSAVE_ENABLED=0
+		;;
+	*)
+		err "Invalid CODEX_PROFILES_AUTOSAVE value '$raw'. Use one of: 1, 0, true, false, yes, no, on, off."
+		return 1
+		;;
+	esac
 }
 
 confirm_overwrite() {
@@ -257,9 +284,27 @@ cmd_list() {
 }
 
 cmd_switch() {
-	local name="${1:-}"
+	local disable_autosave=0
+	local name=""
+
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+		--no-autosave)
+			disable_autosave=1
+			;;
+		*)
+			if [[ -n "$name" ]]; then
+				err "Usage: ${SCRIPT_NAME} switch [--no-autosave] <name>"
+				return 1
+			fi
+			name="$1"
+			;;
+		esac
+		shift
+	done
+
 	if [[ -z "$name" ]]; then
-		err "Usage: ${SCRIPT_NAME} switch <name>"
+		err "Usage: ${SCRIPT_NAME} switch [--no-autosave] <name>"
 		return 1
 	fi
 
@@ -270,6 +315,24 @@ cmd_switch() {
 	if [[ ! -d "$src" ]]; then
 		err "Profile '$name' does not exist. Use '${SCRIPT_NAME} list' to see available profiles."
 		return 1
+	fi
+
+	if [[ "$AUTOSAVE_ENABLED" -eq 1 && "$disable_autosave" -eq 0 ]]; then
+		if [[ -d "$CODEX_DIR" ]]; then
+			local current
+			if current="$(read_current_profile 2>/dev/null)"; then
+				if [[ "$current" != "$name" ]]; then
+					local current_dest
+					current_dest="$(profile_path "$current")"
+					if [[ ! -d "$current_dest" ]]; then
+						err "Current profile '$current' does not exist on disk, cannot auto-save before switch. Use '--no-autosave' to bypass once."
+						return 1
+					fi
+					debug "Auto-saving current profile '$current' before switch"
+					replace_directory_from_source "$CODEX_DIR" "$current_dest"
+				fi
+			fi
+		fi
 	fi
 
 	local backup_path
@@ -338,6 +401,7 @@ parse_args() {
 
 main() {
 	ensure_base_dirs
+	configure_autosave_from_env
 	parse_args "$@"
 
 	case "$COMMAND" in

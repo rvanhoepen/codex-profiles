@@ -43,6 +43,8 @@ Without tooling, switching requires manual file copying in `~/.codex`, which is 
 - **FR-006**: The tool MUST fail with clear errors for missing/invalid profile names.
 - **FR-007**: The tool MUST create required directories if missing.
 - **FR-008**: `add <profile>` MUST set `current_profile` to the newly added profile so `list`/`current` update immediately.
+- **FR-009**: `switch <profile>` MUST auto-save the current profile snapshot before switching by default.
+- **FR-010**: Auto-save behavior MUST be configurable via `CODEX_PROFILES_AUTOSAVE` (default enabled) and overridable for one switch with `--no-autosave`.
 
 ### Safety Requirements
 
@@ -64,15 +66,20 @@ Script name: `codex-profiles.sh`
 codex-profiles.sh add <name>         # create profile from current ~/.codex
 codex-profiles.sh save [name]        # save current ~/.codex into named/current profile
 codex-profiles.sh list               # list all profiles
-codex-profiles.sh switch <name>      # restore profile into ~/.codex
+codex-profiles.sh switch [--no-autosave] <name>  # restore profile into ~/.codex
 codex-profiles.sh current            # print active profile (if known)
 codex-profiles.sh help
 ```
 
-Optional flags (v1 if time allows):
+Options:
 
 - `--force` to allow overwrite without prompt.
 - `--verbose` for debug output.
+- `--no-autosave` to skip auto-save for a single `switch` operation.
+
+Environment:
+
+- `CODEX_PROFILES_AUTOSAVE=1|0` to enable/disable switch auto-save (defaults to `1`).
 
 ## 7. Data Model and Filesystem Layout
 
@@ -121,13 +128,14 @@ Rules:
 2. Mark active profile from `current_profile`.
 3. Print deterministic sorted output.
 
-### `switch <name>`
+### `switch [--no-autosave] <name>`
 
 1. Validate profile exists.
-2. Backup current `~/.codex` into timestamped backup folder.
-3. Restore selected profile snapshot to `~/.codex`.
-4. Update `current_profile`.
-5. Print success + backup location.
+2. If auto-save is enabled, save current `~/.codex` into the current profile snapshot.
+3. Backup current `~/.codex` into timestamped backup folder.
+4. Restore selected profile snapshot to `~/.codex`.
+5. Update `current_profile`.
+6. Print success + backup location.
 
 ### `current`
 
@@ -174,6 +182,9 @@ Rules:
 - `add work` on first run creates profile and exits `0`.
 - Re-running `add work` fails without `--force`.
 - `add personal` after `add work` updates `current`/`list` to `personal` immediately.
+- `switch personal` auto-saves unsaved local changes from current profile before switching.
+- `switch --no-autosave personal` skips auto-save for that one switch.
+- `CODEX_PROFILES_AUTOSAVE=0 switch personal` disables auto-save via environment toggle.
 - `save work` updates snapshot after changing local `~/.codex`.
 - `switch work` restores expected files and writes backup.
 - `list` output remains stable and sorted.

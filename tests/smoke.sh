@@ -61,6 +61,21 @@ main() {
 	HOME="$TMP_HOME" bash "$SCRIPT_PATH" switch work >/dev/null
 	assert_file_content "$TMP_HOME/.codex/state.txt" "work-state-v2" "save work persists updated state"
 
+	printf 'work-autosave-default\n' >"$TMP_HOME/.codex/state.txt"
+	HOME="$TMP_HOME" bash "$SCRIPT_PATH" switch personal >/dev/null
+	HOME="$TMP_HOME" bash "$SCRIPT_PATH" switch work >/dev/null
+	assert_file_content "$TMP_HOME/.codex/state.txt" "work-autosave-default" "switch auto-saves current profile by default"
+
+	printf 'work-no-autosave-once\n' >"$TMP_HOME/.codex/state.txt"
+	HOME="$TMP_HOME" bash "$SCRIPT_PATH" switch --no-autosave personal >/dev/null
+	HOME="$TMP_HOME" bash "$SCRIPT_PATH" switch work >/dev/null
+	assert_file_content "$TMP_HOME/.codex/state.txt" "work-autosave-default" "switch --no-autosave skips one-time auto-save"
+
+	printf 'work-env-disabled\n' >"$TMP_HOME/.codex/state.txt"
+	HOME="$TMP_HOME" CODEX_PROFILES_AUTOSAVE=0 bash "$SCRIPT_PATH" switch personal >/dev/null
+	HOME="$TMP_HOME" bash "$SCRIPT_PATH" switch work >/dev/null
+	assert_file_content "$TMP_HOME/.codex/state.txt" "work-autosave-default" "CODEX_PROFILES_AUTOSAVE=0 disables auto-save"
+
 	local list_out
 	list_out="$(HOME="$TMP_HOME" bash "$SCRIPT_PATH" list)"
 	[[ "$list_out" == *"personal"* ]] || fail "list output missing personal profile"
