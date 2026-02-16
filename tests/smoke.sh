@@ -45,6 +45,10 @@ main() {
 	printf 'personal-state\n' >"$TMP_HOME/.codex/state.txt"
 	HOME="$TMP_HOME" bash "$SCRIPT_PATH" add personal >/dev/null
 
+	local list_after_add
+	list_after_add="$(HOME="$TMP_HOME" bash "$SCRIPT_PATH" list)"
+	[[ "$list_after_add" == *"* personal (current)"* ]] || fail "list should mark newly added profile as current"
+
 	HOME="$TMP_HOME" bash "$SCRIPT_PATH" switch work >/dev/null
 	assert_file_content "$TMP_HOME/.codex/state.txt" "work-state" "switch work restores work state"
 

@@ -189,12 +189,8 @@ cmd_add() {
 	debug "Saving current Codex state into profile '$name'"
 	replace_directory_from_source "$CODEX_DIR" "$dest"
 
-	if [[ ! -f "$CURRENT_FILE" ]]; then
-		write_current_profile "$name"
-		info "Profile '$name' created and set as current."
-	else
-		info "Profile '$name' created."
-	fi
+	write_current_profile "$name"
+	info "Profile '$name' created and set as current."
 }
 
 cmd_save() {

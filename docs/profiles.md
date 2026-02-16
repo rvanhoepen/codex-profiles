@@ -42,6 +42,7 @@ Without tooling, switching requires manual file copying in `~/.codex`, which is 
 - **FR-005**: The tool MUST show the currently active profile (directly or inferentially).
 - **FR-006**: The tool MUST fail with clear errors for missing/invalid profile names.
 - **FR-007**: The tool MUST create required directories if missing.
+- **FR-008**: `add <profile>` MUST set `current_profile` to the newly added profile so `list`/`current` update immediately.
 
 ### Safety Requirements
 
@@ -104,7 +105,7 @@ Rules:
 2. Ensure `~/.codex` exists (or initialize empty snapshot policy).
 3. If profile exists, fail unless `--force`.
 4. Copy `~/.codex` to `~/.codex-profiles/profiles/<name>/codex`.
-5. Optionally set `current_profile` if none exists.
+5. Set `current_profile` to `<name>`.
 
 ### `save [name]`
 
@@ -172,6 +173,7 @@ Rules:
 
 - `add work` on first run creates profile and exits `0`.
 - Re-running `add work` fails without `--force`.
+- `add personal` after `add work` updates `current`/`list` to `personal` immediately.
 - `save work` updates snapshot after changing local `~/.codex`.
 - `switch work` restores expected files and writes backup.
 - `list` output remains stable and sorted.
